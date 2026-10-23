@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+}
+
+@layer components {
+  /* ── Data table base ── */
+  .vc-table thead th {
+    @apply px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-widest text-stone-500 bg-stone-100 border-b border-stone-200;
+  }
+  .vc-table tbody td {
+    @apply px-4 py-3 text-sm text-stone-700 border-b border-stone-100;
+  }
+  .vc-table tbody tr:hover {
+    @apply bg-stone-50;
+  }
+
+  /* ── Stat block ── */
+  .vc-stat {
+    @apply border-l-4 pl-4 py-2;
+  }
+
+  /* ── Form fields ── */
+  .vc-input {
+    @apply w-full border border-stone-300 rounded bg-white px-3 py-2 text-sm text-stone-800
+           placeholder-stone-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500/30
+           transition;
+  }
+  .vc-label {
+    @apply block text-[11px] font-semibold uppercase tracking-wider text-stone-500 mb-1;
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white text-sm font-semibold
+           rounded hover:bg-teal-700 active:bg-teal-800 transition;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-white text-stone-700 text-sm font-semibold
+           border border-stone-300 rounded hover:bg-stone-50 transition;
+  }
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-rose-600 text-white text-sm font-semibold
+           rounded hover:bg-rose-700 transition;
+  }
+
+  /* ── Card ── */
+  .vc-card {
+    @apply bg-white border border-stone-200 rounded-lg shadow-sm;
+  }
+  .vc-card-header {
+    @apply px-5 py-3.5 border-b border-stone-200 bg-stone-50/60 flex items-center justify-between;
+  }
+  .vc-card-title {
+    @apply text-sm font-bold text-stone-800;
+  }
+}
