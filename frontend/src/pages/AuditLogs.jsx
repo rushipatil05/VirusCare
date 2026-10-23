@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosClient from '../api/axiosClient';
-import { formatDateTime } from '../utils/dateFormatter';
+import { formatDateTime, formatDisplayDate } from '../utils/dateFormatter';
 import {
   FileText,
   Search,
@@ -59,6 +59,142 @@ const AuditLogs = () => {
         return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200">THRESHOLD UPDATED</span>;
       default:
         return <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">{action}</span>;
+    }
+  };
+
+  const renderEventDetails = (log) => {
+    const details = log.details || {};
+    switch (log.action) {
+      case 'PATIENT_REGISTERED':
+        return (
+          <div className="space-y-0.5">
+            <div className="font-semibold text-slate-900">
+              {details.name ? `Admitted ${details.name}` : 'Patient Admitted'}
+              {details.roomNumber ? ` to Room ${details.roomNumber}` : ''}
+            </div>
+            {details.admissionDate && (
+              <div className="text-[11px] text-slate-500">
+                Admission: {formatDisplayDate(details.admissionDate)}
+                {details.initialTemperature ? ` • Initial: ${details.initialTemperature}°C` : ''}
+              </div>
+            )}
+          </div>
+        );
+      case 'TEMPERATURE_RECORDED':
+        return (
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <span className={`font-bold ${details.isFever ? 'text-rose-600' : 'text-slate-900'}`}>
+                {details.temperature ? `${details.temperature}°C` : 'Temp Logged'}
+              </span>
+              <span
+                className={`px-1.5 py-0.2 rounded text-[10px] font-semibold ${
+                  details.isFever ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'
+                }`}
+              >
+                {details.isFever ? 'Fever Spike' : 'Afebrile'}
+              </span>
+            </div>
+            <div className="text-[11px] text-slate-500">
+              {details.recordDate && `Date: ${formatDisplayDate(details.recordDate)} • `}
+              Streak: {details.consecutiveFeverFreeDays ?? 0} day{details.consecutiveFeverFreeDays === 1 ? '' : 's'} fever-free
+            </div>
+          </div>
+        );
+      case 'TEMPERATURE_CORRECTED':
+        return (
+          <div className="space-y-0.5">
+            <div className="font-semibold text-amber-800 flex items-center gap-1.5">
+              <span>{details.previousTemperature}°C</span>
+              <span>&rarr;</span>
+              <span className="font-bold text-slate-900">{details.newTemperature}°C</span>
+              {details.recordDate && (
+                <span className="text-slate-500 font-normal">({formatDisplayDate(details.recordDate)})</span>
+              )}
+            </div>
+            {details.reason && (
+              <div className="text-[11px] text-slate-600 italic">
+                Reason: &ldquo;{details.reason}&rdquo;
+              </div>
+            )}
+          </div>
+        );
+      case 'DOCTOR_VISIT_COMPLETED':
+        return (
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-slate-800">
+                Status: <span className="font-bold text-slate-900">{details.conditionSeverity || 'Evaluated'}</span>
+              </span>
+              {details.visitDate && (
+                <span className="text-[11px] text-slate-500 font-mono">
+                  ({formatDisplayDate(details.visitDate)})
+                </span>
+              )}
+            </div>
+            {details.observationsSnippet && (
+              <div className="text-[11px] text-slate-600 truncate max-w-sm" title={details.observationsSnippet}>
+                Assessment: &ldquo;{details.observationsSnippet}&rdquo;
+              </div>
+            )}
+          </div>
+        );
+      case 'PATIENT_DISCHARGED':
+        return (
+          <div className="space-y-0.5">
+            <div className="font-semibold text-purple-900">
+              Discharge Confirmed
+              {details.freedRoom ? ` • Released Room ${details.freedRoom}` : ''}
+            </div>
+            {details.dischargeDate && (
+              <div className="text-[11px] text-slate-500">
+                Discharged on {formatDisplayDate(details.dischargeDate)}
+              </div>
+            )}
+          </div>
+        );
+      case 'PATIENT_DECEASED':
+        return (
+          <div className="space-y-0.5">
+            <div className="font-semibold text-rose-900">
+              Patient Deceased
+              {details.vacatedRoom ? ` • Vacated Room ${details.vacatedRoom}` : ''}
+            </div>
+            {details.deathDate && (
+              <div className="text-[11px] text-slate-500">
+                Recorded on {formatDisplayDate(details.deathDate)}
+              </div>
+            )}
+          </div>
+        );
+      case 'FEVER_THRESHOLD_UPDATED':
+        return (
+          <div className="space-y-0.5">
+            <div className="font-semibold text-cyan-900">
+              Fever Threshold: {details.previousThreshold}°C &rarr; {details.newThreshold}°C
+            </div>
+            {details.recalculatedPatientsCount !== undefined && (
+              <div className="text-[11px] text-slate-500">
+                {details.recalculatedPatientsCount} patient records recalculated
+              </div>
+            )}
+          </div>
+        );
+      default:
+        return (
+          <div className="flex flex-wrap gap-1.5 text-[11px]">
+            {Object.entries(details).map(([key, value]) => (
+              <span key={key} className="inline-flex items-center gap-1 bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                <span className="font-semibold text-slate-600">{key}:</span>
+                <span>
+                  {typeof value === 'string' && value.includes('T') && value.includes('-')
+                    ? formatDisplayDate(value)
+                    : String(value)}
+                </span>
+              </span>
+            ))}
+          </div>
+        );
     }
   };
 
@@ -144,8 +280,8 @@ const AuditLogs = () => {
                     <td className="px-5 py-3.5 whitespace-nowrap font-bold text-slate-900">
                       {log.patientId || 'System'}
                     </td>
-                    <td className="px-5 py-3.5 text-slate-700 font-mono text-[11px] max-w-md break-words">
-                      {JSON.stringify(log.details)}
+                    <td className="px-5 py-3.5 text-slate-700 text-xs max-w-md">
+                      {renderEventDetails(log)}
                     </td>
                   </tr>
                 ))}

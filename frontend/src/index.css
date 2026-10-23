@@ -5,13 +5,15 @@
 @layer base {
   html {
     font-size: 14px;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   }
 
   body {
     background-color: #f8fafc;
     color: #0f172a;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.011em;
   }
 
   /* Scrollbar */
@@ -72,4 +74,34 @@
   .vc-card-title {
     @apply text-sm font-bold text-stone-800;
   }
+}
+
+/* ── Floating Hospital Emojis Animation ── */
+@keyframes floatHospitalEmoji {
+  0% {
+    transform: translateY(105vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.35;
+  }
+  88% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(-10vh) translateX(40px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-float-emoji {
+  position: fixed;
+  top: 0;
+  display: inline-block;
+  pointer-events: none;
+  user-select: none;
+  animation-name: floatHospitalEmoji;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
 }

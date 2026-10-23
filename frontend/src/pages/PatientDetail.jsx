@@ -561,7 +561,35 @@ const PatientDetail = () => {
                   <span className="font-semibold text-slate-900">{log.action.replace(/_/g, ' ')}</span>
                   <span className="text-slate-500 ml-2">by {log.userName} ({log.userRole})</span>
                   <div className="text-[11px] text-slate-600 mt-0.5">
-                    {JSON.stringify(log.details)}
+                    {log.action === 'TEMPERATURE_RECORDED' ? (
+                      <span>
+                        Recorded <strong>{log.details?.temperature}°C</strong> ({log.details?.isFever ? 'Fever Spike' : 'Afebrile'}) • Streak: {log.details?.consecutiveFeverFreeDays ?? 0} day(s) fever-free
+                      </span>
+                    ) : log.action === 'TEMPERATURE_CORRECTED' ? (
+                      <span>
+                        Corrected: <strong>{log.details?.previousTemperature}°C</strong> &rarr; <strong>{log.details?.newTemperature}°C</strong> ({log.details?.reason})
+                      </span>
+                    ) : log.action === 'DOCTOR_VISIT_COMPLETED' ? (
+                      <span>
+                        Condition: <strong>{log.details?.conditionSeverity}</strong> • &ldquo;{log.details?.observationsSnippet}&rdquo;
+                      </span>
+                    ) : log.action === 'PATIENT_REGISTERED' ? (
+                      <span>
+                        Admitted to Room <strong>{log.details?.roomNumber}</strong> on {formatDisplayDate(log.details?.admissionDate)}
+                      </span>
+                    ) : log.action === 'PATIENT_DISCHARGED' ? (
+                      <span>
+                        Discharged on {formatDisplayDate(log.details?.dischargeDate)} • Released Room {log.details?.freedRoom}
+                      </span>
+                    ) : log.action === 'PATIENT_DECEASED' ? (
+                      <span>
+                        Deceased on {formatDisplayDate(log.details?.deathDate)} • Vacated Room {log.details?.vacatedRoom}
+                      </span>
+                    ) : (
+                      <span>
+                        {Object.entries(log.details || {}).map(([k, v]) => `${k}: ${typeof v === 'string' && v.includes('T') ? formatDisplayDate(v) : v}`).join(' • ')}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <span className="text-[10px] text-slate-400 whitespace-nowrap ml-4">

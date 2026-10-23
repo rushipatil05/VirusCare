@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import MobileBottomNav from './components/MobileBottomNav';
 
 // Pages
 import Login from './pages/Login';
@@ -47,18 +48,48 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-// Layout
-const AppLayout = ({ children }) => (
-  <div className="min-h-screen bg-slate-50 flex flex-col">
-    <Navbar />
-    <div className="flex flex-1">
-      <Sidebar />
-      <main className="flex-1 p-5 sm:p-7 overflow-y-auto">
-        {children}
-      </main>
+// Responsive Layout with Desktop Sidebar & Mobile Off-canvas Drawer + Bottom Nav
+const AppLayout = ({ children }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <Navbar
+        onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
+        isMobileMenuOpen={mobileMenuOpen}
+      />
+      <div className="flex flex-1 relative overflow-hidden">
+        {/* Desktop Sidebar (hidden on mobile) */}
+        <div className="hidden md:flex flex-shrink-0">
+          <Sidebar />
+        </div>
+
+        {/* Mobile Slide Drawer (modal overlay on mobile) */}
+        {mobileMenuOpen && (
+          <div className="md:hidden fixed inset-0 z-50 flex">
+            {/* Dark backdrop */}
+            <div
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            {/* Sliding drawer panel */}
+            <div className="relative w-72 max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-50 animate-in slide-in-from-left duration-200">
+              <Sidebar isMobile onCloseMobile={() => setMobileMenuOpen(false)} />
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Area: padded for mobile bottom nav */}
+        <main className="flex-1 p-3.5 sm:p-5 lg:p-7 overflow-y-auto pb-24 md:pb-8 w-full max-w-full min-w-0">
+          {children}
+        </main>
+      </div>
+
+      {/* Mobile Bottom Navigation Bar (one-thumb navigation on phones) */}
+      <MobileBottomNav onOpenMenu={() => setMobileMenuOpen(true)} />
     </div>
-  </div>
-);
+  );
+};
 
 const App = () => (
   <AuthProvider>
