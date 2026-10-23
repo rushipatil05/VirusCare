@@ -59,6 +59,29 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Database Seed endpoint (runs seedData in MongoDB Atlas / cloud)
+app.all('/api/seed', async (req, res) => {
+  try {
+    const seedData = require('./seed');
+    await seedData(true);
+    res.json({
+      success: true,
+      message: 'VirusCare database seeded successfully!',
+      credentials: {
+        admin: { email: 'admin@viruscare.org', password: 'admin123' },
+        doctor: { email: 'doctor@viruscare.org', password: 'doctor123' },
+        nurse: { email: 'nurse@viruscare.org', password: 'nurse123' },
+      },
+    });
+  } catch (err) {
+    console.error('Seed endpoint error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to seed database: ' + err.message,
+    });
+  }
+});
+
 // Mount Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/patients', require('./routes/patientRoutes'));

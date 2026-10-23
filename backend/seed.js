@@ -12,11 +12,13 @@ const FacilityConfig = require('./models/FacilityConfig');
 const AuditLog = require('./models/AuditLog');
 const { getTodayDateString, addDays } = require('./utils/dateUtils');
 
-const seedData = async () => {
+const seedData = async (keepConnectionOpen = false) => {
   try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/viruscare';
-    await mongoose.connect(mongoUri);
-    console.log(`[Seed] Connected to MongoDB at ${mongoUri}`);
+    if (mongoose.connection.readyState === 0) {
+      const mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/viruscare';
+      await mongoose.connect(mongoUri);
+      console.log(`[Seed] Connected to MongoDB at ${mongoUri}`);
+    }
 
     // Clear existing collections for a clean, deterministic demo state
     await User.deleteMany({});
@@ -381,12 +383,23 @@ const seedData = async () => {
     console.log('  Nurse:  nurse@viruscare.org  /  nurse123');
     console.log('=============================================\n');
 
-    await mongoose.connection.close();
-    process.exit(0);
+    if (!keepConnectionOpen) {
+      await mongoose.connection.close();
+    }
+    return { success: true, message: 'Database seeded successfully' };
   } catch (error) {
     console.error('[Seed Error]:', error);
-    process.exit(1);
+    if (!keepConnectionOpen) {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 
-seedData();
+if (require.main === module) {
+  seedData()
+    .then(() => process.exit(0))
+    .catch(() => process.exit(1));
+}
+
+module.exports = seedData;
