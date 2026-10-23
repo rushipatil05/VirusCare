@@ -82,15 +82,22 @@ app.all('/api/seed', async (req, res) => {
   }
 });
 
-// Mount Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/patients', require('./routes/patientRoutes'));
-app.use('/api/temperatures', require('./routes/temperatureRoutes'));
-app.use('/api/doctor-visits', require('./routes/doctorVisitRoutes'));
-app.use('/api/discharges', require('./routes/dischargeRoutes'));
-app.use('/api/analytics', require('./routes/analyticsRoutes'));
-app.use('/api/config', require('./routes/configRoutes'));
-app.use('/api/audit-logs', require('./routes/auditLogRoutes'));
+// Mount Routes (with /api and root fallback for flexibility)
+const routes = [
+  ['/auth', require('./routes/authRoutes')],
+  ['/patients', require('./routes/patientRoutes')],
+  ['/temperatures', require('./routes/temperatureRoutes')],
+  ['/doctor-visits', require('./routes/doctorVisitRoutes')],
+  ['/discharges', require('./routes/dischargeRoutes')],
+  ['/analytics', require('./routes/analyticsRoutes')],
+  ['/config', require('./routes/configRoutes')],
+  ['/audit-logs', require('./routes/auditLogRoutes')],
+];
+
+routes.forEach(([path, router]) => {
+  app.use(`/api${path}`, router);
+  app.use(path, router); // Handles calls if VITE_API_BASE_URL misses /api
+});
 
 // Global Error Handler
 app.use(errorHandler);
